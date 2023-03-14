@@ -552,6 +552,7 @@ extern "C" {
     pub fn strspn(cs: *const c_char, ct: *const c_char) -> size_t;
     pub fn strcspn(cs: *const c_char, ct: *const c_char) -> size_t;
     pub fn strdup(cs: *const c_char) -> *mut c_char;
+    #[cfg(not(all(target_os = "nto", target_env = "nto70")))]
     pub fn strndup(cs: *const c_char, n: size_t) -> *mut c_char;
     pub fn strpbrk(cs: *const c_char, ct: *const c_char) -> *mut c_char;
     pub fn strstr(cs: *const c_char, ct: *const c_char) -> *mut c_char;
@@ -811,20 +812,49 @@ extern "C" {
     )]
     pub fn rewinddir(dirp: *mut ::DIR);
 
-    pub fn fchmodat(
-        dirfd: ::c_int,
-        pathname: *const ::c_char,
-        mode: ::mode_t,
-        flags: ::c_int,
-    ) -> ::c_int;
     pub fn fchown(fd: ::c_int, owner: ::uid_t, group: ::gid_t) -> ::c_int;
-    pub fn fchownat(
-        dirfd: ::c_int,
-        pathname: *const ::c_char,
-        owner: ::uid_t,
-        group: ::gid_t,
-        flags: ::c_int,
-    ) -> ::c_int;
+}
+
+cfg_if! {
+    if #[cfg(not(all(target_os = "nto", target_env = "nto70")))] {
+        extern "C" {
+            pub fn fchmodat(
+                dirfd: ::c_int,
+                pathname: *const ::c_char,
+                mode: ::mode_t,
+                flags: ::c_int,
+            ) -> ::c_int;
+            pub fn fchownat(
+                dirfd: ::c_int,
+                pathname: *const ::c_char,
+                owner: ::uid_t,
+                group: ::gid_t,
+                flags: ::c_int,
+            ) -> ::c_int;
+            pub fn linkat(
+                olddirfd: ::c_int,
+                oldpath: *const ::c_char,
+                newdirfd: ::c_int,
+                newpath: *const ::c_char,
+                flags: ::c_int,
+            ) -> ::c_int;
+            pub fn renameat(
+                olddirfd: ::c_int,
+                oldpath: *const ::c_char,
+                newdirfd: ::c_int,
+                newpath: *const ::c_char,
+            ) -> ::c_int;
+            pub fn symlinkat(
+                target: *const ::c_char,
+                newdirfd: ::c_int,
+                linkpath: *const ::c_char,
+            ) -> ::c_int;
+            pub fn unlinkat(dirfd: ::c_int, pathname: *const ::c_char, flags: ::c_int) -> ::c_int;
+        }
+    }
+}
+
+extern "C" {
     #[cfg_attr(
         all(target_os = "macos", not(target_arch = "aarch64")),
         link_name = "fstatat$INODE64"
@@ -839,25 +869,6 @@ extern "C" {
         buf: *mut stat,
         flags: ::c_int,
     ) -> ::c_int;
-    pub fn linkat(
-        olddirfd: ::c_int,
-        oldpath: *const ::c_char,
-        newdirfd: ::c_int,
-        newpath: *const ::c_char,
-        flags: ::c_int,
-    ) -> ::c_int;
-    pub fn renameat(
-        olddirfd: ::c_int,
-        oldpath: *const ::c_char,
-        newdirfd: ::c_int,
-        newpath: *const ::c_char,
-    ) -> ::c_int;
-    pub fn symlinkat(
-        target: *const ::c_char,
-        newdirfd: ::c_int,
-        linkpath: *const ::c_char,
-    ) -> ::c_int;
-    pub fn unlinkat(dirfd: ::c_int, pathname: *const ::c_char, flags: ::c_int) -> ::c_int;
 
     pub fn access(path: *const c_char, amode: ::c_int) -> ::c_int;
     pub fn alarm(seconds: ::c_uint) -> ::c_uint;
@@ -1408,6 +1419,7 @@ extern "C" {
     pub fn unlockpt(fd: ::c_int) -> ::c_int;
 
     pub fn strcasestr(cs: *const c_char, ct: *const c_char) -> *mut c_char;
+    #[cfg(not(all(target_os = "nto", target_env = "nto70")))]
     pub fn getline(lineptr: *mut *mut c_char, n: *mut size_t, stream: *mut FILE) -> ssize_t;
 
     pub fn lockf(fd: ::c_int, cmd: ::c_int, len: ::off_t) -> ::c_int;
@@ -1426,7 +1438,7 @@ cfg_if! {
 }
 
 cfg_if! {
-    if #[cfg(not(target_os = "aix"))] {
+    if #[cfg(not(any(target_os = "aix", all(target_os = "nto", target_env = "nto70"))))] {
         extern "C" {
             pub fn dladdr(addr: *const ::c_void, info: *mut Dl_info) -> ::c_int;
         }
@@ -1452,17 +1464,6 @@ cfg_if! {
                        link_name = "pause$UNIX2003")]
             pub fn pause() -> ::c_int;
 
-            pub fn mkdirat(dirfd: ::c_int, pathname: *const ::c_char,
-                          mode: ::mode_t) -> ::c_int;
-            pub fn openat(dirfd: ::c_int, pathname: *const ::c_char,
-                          flags: ::c_int, ...) -> ::c_int;
-
-            #[cfg_attr(all(target_os = "macos", target_arch = "x86_64"),
-                       link_name = "fdopendir$INODE64")]
-            #[cfg_attr(all(target_os = "macos", target_arch = "x86"),
-                       link_name = "fdopendir$INODE64$UNIX2003")]
-            pub fn fdopendir(fd: ::c_int) -> *mut ::DIR;
-
             #[cfg_attr(all(target_os = "macos", not(target_arch = "aarch64")),
                        link_name = "readdir_r$INODE64")]
             #[cfg_attr(target_os = "netbsd", link_name = "__readdir_r30")]
@@ -1484,8 +1485,26 @@ cfg_if! {
 }
 
 cfg_if! {
+    if #[cfg(not(any(target_os = "redox", all(target_os = "nto", target_env = "nto70"))))] {
+        extern {
+            pub fn mkdirat(dirfd: ::c_int, pathname: *const ::c_char,
+                          mode: ::mode_t) -> ::c_int;
+            pub fn openat(dirfd: ::c_int, pathname: *const ::c_char,
+                          flags: ::c_int, ...) -> ::c_int;
+
+            #[cfg_attr(all(target_os = "macos", target_arch = "x86_64"),
+                       link_name = "fdopendir$INODE64")]
+            #[cfg_attr(all(target_os = "macos", target_arch = "x86"),
+                       link_name = "fdopendir$INODE64$UNIX2003")]
+            pub fn fdopendir(fd: ::c_int) -> *mut ::DIR;
+        }
+    }
+}
+
+cfg_if! {
     if #[cfg(target_os = "nto")] {
         extern {
+            #[cfg(not(target_env = "nto70"))]
             pub fn readlinkat(dirfd: ::c_int,
                 pathname: *const ::c_char,
                 buf: *mut ::c_char,

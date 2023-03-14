@@ -539,16 +539,34 @@ s! {
         pub __prealloc: ::c_uint,
         __spare: [::c_int; 2],
     }
+}
 
-    pub struct _sync_attr {
-        pub __protocol: ::c_int,
-        pub __flags: ::c_int,
-        pub __prioceiling: ::c_int,
-        pub __clockid: ::c_int,
-        pub __count: ::c_int,
-        __reserved: [::c_int; 3],
+cfg_if! {
+    if #[cfg(target_env = "nto70")] {
+        s! {
+            pub struct _sync_attr {
+                pub __protocol: ::c_int,
+                pub __flags: ::c_int,
+                pub __prioceiling: ::c_int,
+                pub __clockid: ::c_int,
+                __reserved: [::c_int; 4],
+            }
+        }
+    } else {
+        s! {
+            pub struct _sync_attr {
+                pub __protocol: ::c_int,
+                pub __flags: ::c_int,
+                pub __prioceiling: ::c_int,
+                pub __clockid: ::c_int,
+                pub __count: ::c_int,
+                __reserved: [::c_int; 3],
+            }
+        }
     }
+}
 
+s! {
     pub struct sockcred {
         pub sc_uid: ::uid_t,
         pub sc_euid: ::uid_t,
@@ -600,19 +618,36 @@ s! {
         pub unp_egid: ::gid_t,
     }
 
-    pub struct dl_phdr_info {
-        pub dlpi_addr: ::Elf64_Addr,
-        pub dlpi_name: *const ::c_char,
-        pub dlpi_phdr: *const ::Elf64_Phdr,
-        pub dlpi_phnum: ::Elf64_Half,
-    }
-
     #[repr(align(8))]
     pub struct ucontext_t {
         pub uc_link: *mut ucontext_t,
         pub uc_sigmask: ::sigset_t,
         pub uc_stack: stack_t,
         pub uc_mcontext: mcontext_t,
+    }
+}
+
+cfg_if! {
+    if #[cfg(target_pointer_width = "64")] {
+        s! {
+            pub struct dl_phdr_info {
+                pub dlpi_addr: ::Elf64_Addr,
+                pub dlpi_name: *const ::c_char,
+                pub dlpi_phdr: *const ::Elf64_Phdr,
+                pub dlpi_phnum: ::Elf64_Half,
+            }
+        }
+    } else if #[cfg(target_pointer_width = "32")] {
+        s! {
+            pub struct dl_phdr_info {
+                pub dlpi_addr: ::Elf32_Addr,
+                pub dlpi_name: *const ::c_char,
+                pub dlpi_phdr: *const ::Elf32_Phdr,
+                pub dlpi_phnum: ::Elf32_Half,
+            }
+        }
+    } else {
+        panic!("Unsupported arch");
     }
 }
 
@@ -659,28 +694,58 @@ s_no_extra_traits! {
         pub d_type: u16,
         pub d_reserved: u32,
     }
+}
 
-    pub struct stat {
-        pub st_ino: ::ino_t,
-        pub st_size: ::off_t,
-        pub st_dev: ::dev_t,
-        pub st_rdev: ::dev_t,
-        pub st_uid: ::uid_t,
-        pub st_gid: ::gid_t,
-        pub __old_st_mtime: ::_Time32t,
-        pub __old_st_atime: ::_Time32t,
-        pub __old_st_ctime: ::_Time32t,
-        pub st_mode: ::mode_t,
-        pub st_nlink: ::nlink_t,
-        pub st_blocksize: ::blksize_t,
-        pub st_nblocks: i32,
-        pub st_blksize: ::blksize_t,
-        pub st_blocks: ::blkcnt_t,
-        pub st_mtim:    ::timespec,
-        pub st_atim:    ::timespec,
-        pub st_ctim:    ::timespec,
+cfg_if! {
+    if #[cfg(target_pointer_width = "64")] {
+        s_no_extra_traits! {
+            pub struct stat {
+                pub st_ino: ::ino_t,
+                pub st_size: ::off_t,
+                pub st_dev: ::dev_t,
+                pub st_rdev: ::dev_t,
+                pub st_uid: ::uid_t,
+                pub st_gid: ::gid_t,
+                pub __old_st_mtime: ::_Time32t,
+                pub __old_st_atime: ::_Time32t,
+                pub __old_st_ctime: ::_Time32t,
+                pub st_mode: ::mode_t,
+                pub st_nlink: ::nlink_t,
+                pub st_blocksize: ::blksize_t,
+                pub st_nblocks: i32,
+                pub st_blksize: ::blksize_t,
+                pub st_blocks: ::blkcnt_t,
+                pub st_mtim:    ::timespec,
+                pub st_atim:    ::timespec,
+                pub st_ctim:    ::timespec,
+            }
+        }
+    } else if #[cfg(target_pointer_width = "32")] {
+        s_no_extra_traits! {
+            pub struct stat {
+                pub st_ino: ::ino_t,
+                pub st_size: ::off_t,
+                pub st_dev: ::dev_t,
+                pub st_rdev: ::dev_t,
+                pub st_uid: ::uid_t,
+                pub st_gid: ::gid_t,
+                pub st_mtime: ::_Time32t,
+                pub st_atime: ::_Time32t,
+                pub st_ctime: ::_Time32t,
+                pub st_mode: ::mode_t,
+                pub st_nlink: ::nlink_t,
+                pub st_blocksize: ::blksize_t,
+                pub st_nblocks: i32,
+                pub st_blksize: ::blksize_t,
+                pub st_blocks: ::blkcnt_t,
+            }
+        }
+    } else {
+        panic!("Unsupported arch");
     }
+}
 
+s_no_extra_traits! {
     pub struct sigset_t {
         __val: [u32; 2],
     }
@@ -741,16 +806,37 @@ s_no_extra_traits! {
         __pad: [u8; 28],                   // union
     }
 
-    pub struct pthread_rwlock_t {
-        pub __active: ::c_int,
-        pub __blockedwriters: ::c_int,
-        pub __blockedreaders: ::c_int,
-        pub __heavy: ::c_int,
-        pub __lock: ::pthread_mutex_t,     // union
-        pub __rcond: ::pthread_cond_t,     // union
-        pub __wcond: ::pthread_cond_t,     // union
-        pub __owner: ::c_uint,
-        pub __spare: ::c_uint,
+}
+
+cfg_if! {
+    if #[cfg(target_env = "nto70")] {
+        s_no_extra_traits! {
+            pub struct pthread_rwlock_t {
+                pub __active: ::c_int,
+                pub __spare: *mut ::c_void,
+                pub __blockedwriters: ::c_int,
+                pub __blockedreaders: ::c_int,
+                pub __heavy: ::c_int,
+                pub __lock: ::pthread_mutex_t,     // union
+                pub __rcond: ::pthread_cond_t,     // union
+                pub __wcond: ::pthread_cond_t,     // union
+                pub __owner: ::c_uint,
+            }
+        }
+    } else {
+        s_no_extra_traits! {
+            pub struct pthread_rwlock_t {
+                pub __active: ::c_int,
+                pub __blockedwriters: ::c_int,
+                pub __blockedreaders: ::c_int,
+                pub __heavy: ::c_int,
+                pub __lock: ::pthread_mutex_t,     // union
+                pub __rcond: ::pthread_cond_t,     // union
+                pub __wcond: ::pthread_cond_t,     // union
+                pub __owner: ::c_uint,
+                pub __spare: ::c_uint,
+            }
+        }
     }
 }
 
@@ -1238,10 +1324,15 @@ pub const POSIX_FADV_SEQUENTIAL: ::c_int = 1;
 pub const POSIX_FADV_WILLNEED: ::c_int = 3;
 
 pub const AT_FDCWD: ::c_int = -100;
-pub const AT_EACCESS: ::c_int = 0x0001;
 pub const AT_SYMLINK_NOFOLLOW: ::c_int = 0x0002;
-pub const AT_SYMLINK_FOLLOW: ::c_int = 0x0004;
-pub const AT_REMOVEDIR: ::c_int = 0x0008;
+
+cfg_if! {
+    if #[cfg(not(target_env = "nto70"))] {
+        pub const AT_EACCESS: ::c_int = 0x0001;
+        pub const AT_SYMLINK_FOLLOW: ::c_int = 0x0004;
+        pub const AT_REMOVEDIR: ::c_int = 0x0008;
+    }
+}
 
 pub const LOG_CRON: ::c_int = 9 << 3;
 pub const LOG_AUTHPRIV: ::c_int = 10 << 3;
@@ -1906,6 +1997,7 @@ pub const O_ASYNC: ::c_int = 0o0200000;
 pub const O_NDELAY: ::c_int = O_NONBLOCK;
 pub const O_TRUNC: ::c_int = 0o001000;
 pub const O_CLOEXEC: ::c_int = 0o020000;
+#[cfg(not(target_env = "nto70"))]
 pub const O_DIRECTORY: ::c_int = 0o4000000;
 pub const O_ACCMODE: ::c_int = 0o000007;
 pub const O_APPEND: ::c_int = 0o000010;
@@ -2228,6 +2320,7 @@ pub const IP_RECVDSTADDR: ::c_int = 7;
 pub const IP_RECVIF: ::c_int = 20;
 pub const IPTOS_ECN_NOTECT: u8 = 0x00;
 pub const IUCLC: tcflag_t = 0x00000200;
+#[cfg(not(target_env = "nto70"))]
 pub const IUTF8: tcflag_t = 0x0004000;
 
 pub const KERN_ARGMAX: ::c_int = 8;
@@ -2491,17 +2584,34 @@ pub const PTHREAD_COND_INITIALIZER: pthread_cond_t = pthread_cond_t {
     __u: CLOCK_REALTIME as u32,
     __owner: 0xfffffffb,
 };
-pub const PTHREAD_RWLOCK_INITIALIZER: pthread_rwlock_t = pthread_rwlock_t {
-    __active: 0,
-    __blockedwriters: 0,
-    __blockedreaders: 0,
-    __heavy: 0,
-    __lock: PTHREAD_MUTEX_INITIALIZER,
-    __rcond: PTHREAD_COND_INITIALIZER,
-    __wcond: PTHREAD_COND_INITIALIZER,
-    __owner: -2i32 as ::c_uint,
-    __spare: 0,
-};
+
+cfg_if! {
+    if #[cfg(target_env = "nto70")] {
+        pub const PTHREAD_RWLOCK_INITIALIZER: pthread_rwlock_t = pthread_rwlock_t {
+            __active: 0,
+            __spare: ::core::ptr::null_mut(),
+            __blockedwriters: 0,
+            __blockedreaders: 0,
+            __heavy: 0,
+            __lock: PTHREAD_MUTEX_INITIALIZER,
+            __rcond: PTHREAD_COND_INITIALIZER,
+            __wcond: PTHREAD_COND_INITIALIZER,
+            __owner: -2i32 as ::c_uint,
+        };
+    } else {
+        pub const PTHREAD_RWLOCK_INITIALIZER: pthread_rwlock_t = pthread_rwlock_t {
+            __active: 0,
+            __blockedwriters: 0,
+            __blockedreaders: 0,
+            __heavy: 0,
+            __lock: PTHREAD_MUTEX_INITIALIZER,
+            __rcond: PTHREAD_COND_INITIALIZER,
+            __wcond: PTHREAD_COND_INITIALIZER,
+            __owner: -2i32 as ::c_uint,
+            __spare: 0,
+        };
+    }
+}
 
 const_fn! {
     {const} fn _CMSG_ALIGN(len: usize) -> usize {
@@ -2647,9 +2757,9 @@ safe_f! {
 }
 
 // Network related functions are provided by libsocket and regex
-// functions are provided by libregex.
+// functions are provided by libregex on QNX >= 7.1.
 #[link(name = "socket")]
-#[link(name = "regex")]
+#[cfg_attr(not(target_env = "nto70"), link(name = "regex"))]
 
 extern "C" {
     pub fn sem_destroy(sem: *mut sem_t) -> ::c_int;
@@ -2657,6 +2767,7 @@ extern "C" {
     pub fn fdatasync(fd: ::c_int) -> ::c_int;
     pub fn getpriority(which: ::c_int, who: ::id_t) -> ::c_int;
     pub fn setpriority(which: ::c_int, who: ::id_t, prio: ::c_int) -> ::c_int;
+    #[cfg(not(target_env = "nto70"))]
     pub fn mkfifoat(dirfd: ::c_int, pathname: *const ::c_char, mode: ::mode_t) -> ::c_int;
 
     pub fn clock_getres(clk_id: ::clockid_t, tp: *mut ::timespec) -> ::c_int;
@@ -3040,6 +3151,7 @@ extern "C" {
         newfd: ::c_int,
     ) -> ::c_int;
     pub fn popen(command: *const c_char, mode: *const c_char) -> *mut ::FILE;
+    #[cfg(not(target_env = "nto70"))]
     pub fn faccessat(
         dirfd: ::c_int,
         pathname: *const ::c_char,
@@ -3078,7 +3190,7 @@ extern "C" {
         timeout: *mut ::timespec,
     ) -> ::c_int;
 
-    pub fn mallopt(param: ::c_int, value: i64) -> ::c_int;
+    pub fn mallopt(param: ::c_int, value: ::intptr_t) -> ::c_int;
     pub fn gettimeofday(tp: *mut ::timeval, tz: *mut ::c_void) -> ::c_int;
 
     pub fn ctermid(s: *mut ::c_char) -> *mut ::c_char;
@@ -3145,6 +3257,7 @@ extern "C" {
         __errbuf_size: ::size_t,
     ) -> ::size_t;
     pub fn regfree(__preg: *mut ::regex_t);
+    #[cfg(not(target_env = "nto70"))]
     pub fn dirfd(__dirp: *mut ::DIR) -> ::c_int;
     pub fn dircntl(dir: *mut ::DIR, cmd: ::c_int, ...) -> ::c_int;
 
@@ -3271,6 +3384,10 @@ cfg_if! {
     if #[cfg(target_arch = "x86_64")] {
         mod x86_64;
         pub use self::x86_64::*;
+    }
+    else if #[cfg(target_arch = "x86")] {
+        mod x86;
+        pub use self::x86::*;
     }
     else if #[cfg(target_arch = "aarch64")] {
         mod aarch64;
