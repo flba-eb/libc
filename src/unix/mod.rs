@@ -375,9 +375,14 @@ cfg_if! {
                         target_os = "watchos",
                         target_os = "android",
                         target_os = "openbsd",
-                        target_os = "nto",
+                        all(target_os = "nto", not(target_env = "nto70")),
                     ))] {
         #[link(name = "c")]
+        #[link(name = "m")]
+        extern {}
+    } else if #[cfg(all(target_os = "nto", target_env = "nto70"))] {
+        #[link(name = "c")]
+        #[link(name = "cS")]
         #[link(name = "m")]
         extern {}
     } else if #[cfg(target_os = "haiku")] {
