@@ -47,14 +47,8 @@ pub type nlink_t = u32;
 pub type blksize_t = u32;
 pub type suseconds_t = i32;
 
-pub type ino_t = u64;
-pub type off_t = i64;
-pub type blkcnt_t = u64;
-pub type msgqnum_t = u64;
-pub type msglen_t = u64;
-pub type fsblkcnt_t = u64;
-pub type fsfilcnt_t = u64;
-pub type rlim_t = u64;
+pub type msgqnum_t = ::c_ulong;
+pub type msglen_t = ::c_ulong;
 pub type posix_spawn_file_actions_t = *mut ::c_void;
 pub type posix_spawnattr_t = ::uintptr_t;
 
@@ -127,7 +121,7 @@ s! {
     }
 
     pub struct fd_set {
-        fds_bits: [::c_uint; 2 * FD_SETSIZE / ULONG_SIZE],
+        fds_bits: [::c_int; (FD_SETSIZE + NFDBITS - 1) / NFDBITS],
     }
 
     pub struct tm {
@@ -144,18 +138,18 @@ s! {
         pub tm_zone: *const ::c_char,
     }
 
-    #[repr(align(8))]
+    #[cfg_attr(target_pointer_width = "64", repr(align(8)))]
     pub struct sched_param {
         pub sched_priority: ::c_int,
         pub sched_curpriority: ::c_int,
-        pub reserved: [::c_int; 10],
+        pub reserved: [::c_int; 8],
     }
 
-    #[repr(align(8))]
+    #[cfg_attr(target_pointer_width = "64", repr(align(8)))]
     pub struct __sched_param {
         pub __sched_priority: ::c_int,
         pub __sched_curpriority: ::c_int,
-        pub reserved: [::c_int; 10],
+        pub reserved: [::c_int; 8],
     }
 
     pub struct Dl_info {
@@ -240,12 +234,15 @@ s! {
         pub msg_len: ::c_uint,
     }
 
-    #[repr(align(8))]
+    #[cfg_attr(target_pointer_width = "64", repr(align(8)))]
     pub struct siginfo_t {
         pub si_signo: ::c_int,
         pub si_code: ::c_int,
         pub si_errno: ::c_int,
+        #[cfg(target_pointer_width = "64")]
         __data: [u8; 36], // union
+        #[cfg(target_pointer_width = "32")]
+        __data: [u8; 28], // union
     }
 
     pub struct sigaction {
@@ -463,7 +460,11 @@ s! {
         pub l_whence: i16,
         pub l_zero1: i32,
         pub l_start: ::off_t,
+        #[cfg(target_arch = "x86")]
+        pub l_start_hi: ::off_t,
         pub l_len: ::off_t,
+        #[cfg(target_arch = "x86")]
+        pub l_len_hi: ::off_t,
         pub l_pid: ::pid_t,
         pub l_sysid: u32,
     }
@@ -472,11 +473,23 @@ s! {
         pub f_bsize: ::c_ulong,
         pub f_frsize: ::c_ulong,
         pub f_blocks: ::fsblkcnt_t,
+        #[cfg(target_arch = "x86")]
+        pub f_blocks_hi: ::fsblkcnt_t,
         pub f_bfree: ::fsblkcnt_t,
+        #[cfg(target_arch = "x86")]
+        pub f_bfree_hi: ::fsblkcnt_t,
         pub f_bavail: ::fsblkcnt_t,
+        #[cfg(target_arch = "x86")]
+        pub f_bavail_hi: ::fsblkcnt_t,
         pub f_files: ::fsfilcnt_t,
+        #[cfg(target_arch = "x86")]
+        pub f_files_hi: ::fsfilcnt_t,
         pub f_ffree: ::fsfilcnt_t,
+        #[cfg(target_arch = "x86")]
+        pub f_ffree_hi: ::fsfilcnt_t,
         pub f_favail: ::fsfilcnt_t,
+        #[cfg(target_arch = "x86")]
+        pub f_favail_hi: ::fsfilcnt_t,
         pub f_fsid: ::c_ulong,
         pub f_basetype: [::c_char; 16],
         pub f_flag: ::c_ulong,
@@ -487,7 +500,9 @@ s! {
     pub struct aiocb {
         pub aio_fildes: ::c_int,
         pub aio_reqprio: ::c_int,
-        pub aio_offset: off_t,
+        pub aio_offset: ::off_t,
+        #[cfg(target_arch = "x86")]
+        pub aio_offset_hi: ::off_t,
         pub aio_buf: *mut ::c_void,
         pub aio_nbytes: ::size_t,
         pub aio_sigevent: ::sigevent,
@@ -507,7 +522,10 @@ s! {
 
     pub struct pthread_attr_t {
         __data1: ::c_long,
-        __data2: [u8; 96]
+        #[cfg(target_pointer_width = "32")]
+        __data2: [u8; 72],
+        #[cfg(target_pointer_width = "64")]
+        __data2: [u8; 96],
     }
 
     pub struct ipc_perm {
@@ -581,6 +599,7 @@ s! {
         pub bf_insns: *mut ::bpf_insn,
     }
 
+    #[cfg_attr(target_pointer_width = "32", repr(align(8)))]
     pub struct bpf_stat {
         pub bs_recv: u64,
         pub bs_drop: u64,
@@ -618,7 +637,7 @@ s! {
         pub unp_egid: ::gid_t,
     }
 
-    #[repr(align(8))]
+    #[cfg_attr(target_pointer_width = "64", repr(align(8)))]
     pub struct ucontext_t {
         pub uc_link: *mut ucontext_t,
         pub uc_sigmask: ::sigset_t,
@@ -658,6 +677,7 @@ s_no_extra_traits! {
         pub sun_path: [::c_char; 104]
     }
 
+    #[cfg_attr(target_pointer_width = "32", repr(align(8)))]
     pub struct sockaddr_storage {
         pub ss_len: u8,
         pub ss_family: sa_family_t,
@@ -681,9 +701,14 @@ s_no_extra_traits! {
         __sigev_un2: usize, // union
 
     }
+
     pub struct dirent {
         pub d_ino: ::ino_t,
+        #[cfg(target_arch = "x86")]
+        pub d_ino_hi: ::ino_t,
         pub d_offset: ::off_t,
+        #[cfg(target_arch = "x86")]
+        pub d_offset_hi: ::off_t,
         pub d_reclen: ::c_short,
         pub d_namelen: ::c_short,
         pub d_name: [::c_char; 1], // flex array
@@ -720,11 +745,13 @@ cfg_if! {
                 pub st_ctim:    ::timespec,
             }
         }
-    } else if #[cfg(target_pointer_width = "32")] {
+    } else if #[cfg(target_arch = "x86")] {
         s_no_extra_traits! {
             pub struct stat {
                 pub st_ino: ::ino_t,
+                pub st_ino_hi: ::ino_t,
                 pub st_size: ::off_t,
+                pub st_size_hi: ::off_t,
                 pub st_dev: ::dev_t,
                 pub st_rdev: ::dev_t,
                 pub st_uid: ::uid_t,
@@ -738,6 +765,7 @@ cfg_if! {
                 pub st_nblocks: i32,
                 pub st_blksize: ::blksize_t,
                 pub st_blocks: ::blkcnt_t,
+                pub st_blocks_hi: ::blkcnt_t,
             }
         }
     } else {
@@ -759,12 +787,12 @@ s_no_extra_traits! {
         pub mq_recvwait: ::c_long,
     }
 
+    #[cfg_attr(target_pointer_width = "64", repr(align(8)))]
     pub struct msg {
         pub msg_next: *mut ::msg,
         pub msg_type: ::c_long,
         pub msg_ts: ::c_ushort,
         pub msg_spot: ::c_short,
-        _pad: [u8; 4],
     }
 
     pub struct msqid_ds {
@@ -1034,19 +1062,10 @@ cfg_if! {
 }
 
 pub const _SYSNAME_SIZE: usize = 256 + 1;
-pub const RLIM_INFINITY: ::rlim_t = 0xfffffffffffffffd;
 pub const O_LARGEFILE: ::c_int = 0o0100000;
 
 // intentionally not public, only used for fd_set
-cfg_if! {
-    if #[cfg(target_pointer_width = "32")] {
-        const ULONG_SIZE: usize = 32;
-    } else if #[cfg(target_pointer_width = "64")] {
-        const ULONG_SIZE: usize = 64;
-    } else {
-        // Unknown target_pointer_width
-    }
-}
+const NFDBITS: usize = ::mem::size_of::<::c_int>() * 8;
 
 pub const EXIT_FAILURE: ::c_int = 1;
 pub const EXIT_SUCCESS: ::c_int = 0;
@@ -1118,7 +1137,13 @@ pub const SCM_RIGHTS: ::c_int = 0x01;
 pub const SCM_TIMESTAMP: ::c_int = 0x02;
 pub const SCM_CREDS: ::c_int = 0x04;
 
-pub const MAP_TYPE: ::c_int = 0x3;
+cfg_if! {
+    if #[cfg(target_env = "nto70")] {
+        pub const MAP_TYPE: ::c_int = 0xf;
+    } else {
+        pub const MAP_TYPE: ::c_int = 0x3;
+    }
+}
 
 pub const IFF_UP: ::c_int = 0x00000001;
 pub const IFF_BROADCAST: ::c_int = 0x00000002;
@@ -2052,12 +2077,6 @@ pub const SIG_UNBLOCK: ::c_int = 1;
 pub const POLLWRNORM: ::c_short = ::POLLOUT;
 pub const POLLWRBAND: ::c_short = 0x0010;
 
-pub const F_SETLK: ::c_int = 106;
-pub const F_SETLKW: ::c_int = 107;
-pub const F_ALLOCSP: ::c_int = 110;
-pub const F_FREESP: ::c_int = 111;
-pub const F_GETLK: ::c_int = 114;
-
 pub const F_RDLCK: ::c_int = 1;
 pub const F_WRLCK: ::c_int = 2;
 pub const F_UNLCK: ::c_int = 3;
@@ -2251,20 +2270,16 @@ pub const B76800: ::speed_t = 76800;
 pub const BIOCFLUSH: ::c_int = 17000;
 pub const BIOCGBLEN: ::c_int = 1074020966;
 pub const BIOCGDLT: ::c_int = 1074020970;
-pub const BIOCGDLTLIST: ::c_int = -1072676233;
 pub const BIOCGETIF: ::c_int = 1083196011;
 pub const BIOCGHDRCMPLT: ::c_int = 1074020980;
-pub const BIOCGRTIMEOUT: ::c_int = 1074807406;
 pub const BIOCGSEESENT: ::c_int = 1074020984;
 pub const BIOCGSTATS: ::c_int = 1082147439;
 pub const BIOCIMMEDIATE: ::c_int = -2147204496;
 pub const BIOCPROMISC: ::c_int = 17001;
 pub const BIOCSBLEN: ::c_int = -1073462682;
 pub const BIOCSDLT: ::c_int = -2147204490;
-pub const BIOCSETF: ::c_int = -2146418073;
 pub const BIOCSETIF: ::c_int = -2138029460;
 pub const BIOCSHDRCMPLT: ::c_int = -2147204491;
-pub const BIOCSRTIMEOUT: ::c_int = -2146418067;
 pub const BIOCSSEESENT: ::c_int = -2147204487;
 pub const BIOCVERSION: ::c_int = 1074020977;
 
@@ -2460,8 +2475,6 @@ pub const SIGCLD: ::c_int = SIGCHLD;
 pub const SIGDEADLK: ::c_int = 7;
 pub const SIGEMT: ::c_int = 7;
 pub const SIGEV_NONE: ::c_int = 0;
-pub const SIGEV_SIGNAL: ::c_int = 129;
-pub const SIGEV_THREAD: ::c_int = 135;
 pub const SIOCGIFADDR: ::c_int = -1064277727;
 pub const SO_FIB: ::c_int = 0x100a;
 pub const SO_OVERFLOWED: ::c_int = 0x1009;
@@ -2580,13 +2593,15 @@ pub const PTHREAD_MUTEX_INITIALIZER: pthread_mutex_t = pthread_mutex_t {
     __u: 0x80000000,
     __owner: 0xffffffff,
 };
-pub const PTHREAD_COND_INITIALIZER: pthread_cond_t = pthread_cond_t {
-    __u: CLOCK_REALTIME as u32,
-    __owner: 0xfffffffb,
-};
+
 
 cfg_if! {
     if #[cfg(target_env = "nto70")] {
+        pub const PTHREAD_COND_INITIALIZER: pthread_cond_t = pthread_cond_t {
+            __u: 0xfffffffb,
+            __owner: 0xffffffff,
+        };
+
         pub const PTHREAD_RWLOCK_INITIALIZER: pthread_rwlock_t = pthread_rwlock_t {
             __active: 0,
             __spare: ::core::ptr::null_mut(),
@@ -2599,6 +2614,11 @@ cfg_if! {
             __owner: -2i32 as ::c_uint,
         };
     } else {
+        pub const PTHREAD_COND_INITIALIZER: pthread_cond_t = pthread_cond_t {
+            __u: CLOCK_REALTIME as u32,
+            __owner: 0xfffffffb,
+        };
+
         pub const PTHREAD_RWLOCK_INITIALIZER: pthread_rwlock_t = pthread_rwlock_t {
             __active: 0,
             __blockedwriters: 0,

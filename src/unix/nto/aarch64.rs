@@ -3,6 +3,12 @@ pub type wchar_t = u32;
 pub type c_long = i64;
 pub type c_ulong = u64;
 pub type time_t = i64;
+pub type ino_t = u64;
+pub type off_t = i64;
+pub type blkcnt_t = u64;
+pub type fsblkcnt_t = u64;
+pub type fsfilcnt_t = u64;
+pub type rlim_t = u64;
 
 s! {
     pub struct aarch64_qreg_t {
@@ -34,3 +40,19 @@ s! {
         pub ss_flags: ::c_int,
     }
 }
+
+pub const RLIM_INFINITY: ::rlim_t = 0xfffffffffffffffd;
+
+pub const F_SETLK: ::c_int = 106;
+pub const F_SETLKW: ::c_int = 107;
+pub const F_ALLOCSP: ::c_int = 110;
+pub const F_FREESP: ::c_int = 111;
+pub const F_GETLK: ::c_int = 114;
+
+pub const BIOCGDLTLIST: ::c_int = -1072676233;
+pub const BIOCSETF: ::c_int = -2146418073;
+pub const BIOCGRTIMEOUT: ::c_int = 1074807406;
+pub const BIOCSRTIMEOUT: ::c_int = -2146418067;
+
+pub const SIGEV_SIGNAL: ::c_int = 129;
+pub const SIGEV_THREAD: ::c_int = 135;

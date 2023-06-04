@@ -81,7 +81,11 @@ s! {
 
     pub struct rlimit {
         pub rlim_cur: rlim_t,
+        #[cfg(all(target_os = "nto", target_env = "nto70", target_arch = "x86"))]
+        pub rlim_cur_hi: rlim_t,
         pub rlim_max: rlim_t,
+        #[cfg(all(target_os = "nto", target_env = "nto70", target_arch = "x86"))]
+        pub rlim_max_hi: rlim_t,
     }
 
     pub struct rusage {

@@ -1,8 +1,14 @@
 pub type c_char = i8;
 pub type wchar_t = u32;
-pub type c_long = i64;
-pub type c_ulong = u64;
+pub type c_long = i32;
+pub type c_ulong = u32;
 pub type time_t = u32;
+pub type ino_t = u32;
+pub type off_t = i32;
+pub type blkcnt_t = u32;
+pub type fsblkcnt_t = u32;
+pub type fsfilcnt_t = u32;
+pub type rlim_t = u32;
 
 s! {
     pub struct x86_cpu_registers {
@@ -110,3 +116,19 @@ cfg_if! {
         }
     }
 }
+
+pub const RLIM_INFINITY: ::rlim_t = 0x7fffffff;
+
+pub const F_SETLK: ::c_int = 6;
+pub const F_SETLKW: ::c_int = 7;
+pub const F_ALLOCSP: ::c_int = 10;
+pub const F_FREESP: ::c_int = 11;
+pub const F_GETLK: ::c_int = 14;
+
+pub const BIOCGDLTLIST: ::c_int = -1073200521;
+pub const BIOCSETF: ::c_int = -2146942361;
+pub const BIOCGRTIMEOUT: ::c_int = 1074283118;
+pub const BIOCSRTIMEOUT: ::c_int = -2146942355;
+
+pub const SIGEV_SIGNAL: ::c_int = 1;
+pub const SIGEV_THREAD: ::c_int = 7;

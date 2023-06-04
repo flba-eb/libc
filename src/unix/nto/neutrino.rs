@@ -10,6 +10,7 @@ s! {
         pub iov_len: ::size_t,
     }
 
+    #[cfg_attr(target_pointer_width = "32", repr(align(8)))]
     pub struct _itimer {
         pub nsec: u64,
         pub interval_nsec: u64,
@@ -31,6 +32,7 @@ s! {
         pub type_id: u32
     }
 
+    #[cfg_attr(target_pointer_width = "32", repr(align(8)))]
     pub struct _msg_info64 {
         pub nd: u32,
         pub srcnd: u32,
@@ -67,6 +69,7 @@ s! {
         pub cred: ::_cred_info,
     }
 
+    #[cfg_attr(target_pointer_width = "32", repr(align(8)))]
     pub struct _client_able {
         pub ability: u32,
         pub flags: u32,
@@ -143,6 +146,7 @@ s! {
         pub scale: ::c_uint,
     }
 
+    #[repr(align(8))]
     pub struct _idle_hook {
         pub hook_size: ::c_uint,
         pub cmd: ::c_uint,
@@ -163,6 +167,7 @@ s! {
         pub tick_nsec_inc: i32,
     }
 
+    #[cfg_attr(target_pointer_width = "32", repr(align(8)))]
     pub struct _sched_info {
         pub priority_min: ::c_int,
         pub priority_max: ::c_int,
@@ -171,6 +176,7 @@ s! {
         reserved: [::c_int; 11],
     }
 
+    #[repr(align(8))]
     pub struct _timer_info {
         pub itime: ::_itimer,
         pub otime: ::_itimer,
@@ -191,6 +197,7 @@ s! {
 cfg_if! {
     if #[cfg(target_env = "nto70")] {
         s! {
+            #[cfg_attr(target_pointer_width = "32", repr(align(8)))]
             pub struct qtime_entry {
                 pub cycles_per_sec: u64,
                 pub nsec_tod_adjust: u64, // volatile
@@ -221,6 +228,7 @@ cfg_if! {
                 reserved: [::c_uint; 3],
             }
 
+            #[cfg_attr(target_pointer_width = "32", repr(align(8)))]
             pub struct qtime_entry {
                 pub cycles_per_sec: u64,
                 pub nsec_tod_adjust: u64, // volatile
