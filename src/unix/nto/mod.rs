@@ -2686,8 +2686,8 @@ pub const PTHREAD_PROCESS_SHARED: ::c_int = 0x01;
 pub const PTHREAD_KEYS_MAX: usize = 128;
 
 pub const PTHREAD_MUTEX_INITIALIZER: pthread_mutex_t = pthread_mutex_t {
-    __u: 0x80000000,
-    __owner: 0xffffffff,
+    __u: 0x82000000,
+    __owner: 0x0,
 };
 pub const PTHREAD_COND_INITIALIZER: pthread_cond_t = pthread_cond_t {
     __u: CLOCK_REALTIME as u32,

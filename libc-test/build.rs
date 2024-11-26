@@ -3158,6 +3158,9 @@ fn test_neutrino(target: &str) {
             // Does not exist in Neutrino
             "locale_t" => true,
 
+            // FIXME: "'__uint128' undeclared" in C
+            "__uint128" => true,
+
             _ => false,
         }
     });
@@ -3217,6 +3220,9 @@ fn test_neutrino(target: &str) {
             // Not defined in any headers.  Defined to work around a
             // stack unwinding bug.
             "__my_thread_exit" => true,
+
+            // Wrong const-ness
+            "dl_iterate_phdr" => true,
 
             _ => false,
         }
