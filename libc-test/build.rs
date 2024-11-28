@@ -3001,8 +3001,15 @@ fn test_neutrino(target: &str) {
     assert!(target.contains("nto-qnx"));
 
     let mut cfg = ctest_cfg();
+    cfg.include(concat!(env!("QNX_TARGET"), "/usr/include/io-sock"));
 
     headers! { cfg:
+        "io-sock.h",
+        "sys/types.h",
+        "sys/socket.h",
+        "sys/sysctl.h",
+        "net/if.h",
+        "net/if_arp.h",
         "ctype.h",
         "dirent.h",
         "dlfcn.h",
