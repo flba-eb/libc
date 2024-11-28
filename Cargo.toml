@@ -129,7 +129,7 @@ targets = [
     "x86_64-unknown-netbsd",
     "x86_64-unknown-openbsd",
     "x86_64-unknown-redox",
-    "x86_64-wrs-vxworks"
+    "x86_64-wrs-vxworks",
 ]
 cargo-args = ["-Zbuild-std=core"]
 
@@ -153,3 +153,7 @@ use_std = ['std']
 
 [workspace]
 members = ["libc-test"]
+
+[patch.crates-io]
+ctest2 = { path = "libc-test/ctest2" }
+cc = { path = "libc-test/cc-rs" }
