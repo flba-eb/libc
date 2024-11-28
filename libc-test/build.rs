@@ -155,8 +155,10 @@ fn main() {
     println!("cargo:rerun-if-changed=build.rs");
 
     let hotfix_dir = src_hotfix_dir();
-    if std::fs::exists(&hotfix_dir).unwrap() {
-        std::fs::remove_dir_all(&hotfix_dir).unwrap();
+    match std::path::Path::new(&hotfix_dir).try_exists() {
+        Ok(true) => std::fs::remove_dir_all(&hotfix_dir).unwrap(),
+        Ok(false) => (),
+        Err(e) => panic!("Cannot determine if hofix dir exists (it should not: {hotfix_dir:?}), err: {e}"),
     }
 
     // FIXME(ctest): ctest2 cannot parse `crate::` in paths, so replace them with `::`
