@@ -123,12 +123,22 @@ s! {
         pub sa_data: [::c_char; 14],
     }
 
+    #[cfg(not(target_env = "nto71-iosock"))]
     pub struct sockaddr_in {
         pub sin_len: u8,
         pub sin_family: sa_family_t,
         pub sin_port: ::in_port_t,
         pub sin_addr: ::in_addr,
         pub sin_zero: [i8; 8],
+    }
+
+    #[cfg(target_env = "nto71-iosock")]
+    pub struct sockaddr_in {
+        pub sin_len: u8,
+        pub sin_family: sa_family_t,
+        pub sin_port: ::in_port_t,
+        pub sin_addr: ::in_addr,
+        pub sin_zero: [::c_char; 8],
     }
 
     pub struct sockaddr_in6 {
@@ -232,6 +242,8 @@ s! {
         pub _Reserved: [*mut ::c_char; 8],
     }
 
+    // Does not exist in io-sock
+    #[cfg(not(target_env = "nto71-iosock"))]
     pub struct in_pktinfo {
         pub ipi_addr: ::in_addr,
         pub ipi_ifindex: ::c_uint,
@@ -262,9 +274,16 @@ s! {
         pub ar_op: u16,
     }
 
+    #[cfg(not(target_env = "nto71-iosock"))]
     pub struct mmsghdr {
         pub msg_hdr: ::msghdr,
         pub msg_len: ::c_uint,
+    }
+
+    #[cfg(target_env = "nto71-iosock")]
+    pub struct mmsghdr {
+        pub msg_hdr: ::msghdr,
+        pub msg_len: ::ssize_t,
     }
 
     #[repr(align(8))]
@@ -590,11 +609,18 @@ s! {
         pub bf_insns: *mut ::bpf_insn,
     }
 
+    #[cfg(not(target_env = "nto71-iosock"))]
     pub struct bpf_stat {
         pub bs_recv: u64,
         pub bs_drop: u64,
         pub bs_capt: u64,
         bs_padding: [u64; 13],
+    }
+
+    #[cfg(target_env = "nto71-iosock")]
+    pub struct bpf_stat {
+        pub bs_recv: ::c_uint,
+        pub bs_drop: ::c_uint,
     }
 
     pub struct bpf_version {
@@ -621,6 +647,8 @@ s! {
         pub bfl_list: *mut ::c_uint,
     }
 
+    // Does not exist in io-sock
+    #[cfg(not(target_env = "nto71-iosock"))]
     pub struct unpcbid {
         pub unp_pid: ::pid_t,
         pub unp_euid: ::uid_t,
@@ -721,6 +749,7 @@ s_no_extra_traits! {
         msg_pad4: [::c_long; 4],
     }
 
+    #[cfg(not(target_env = "nto71-iosock"))]
     pub struct sockaddr_dl {
         pub sdl_len: ::c_uchar,
         pub sdl_family: ::sa_family_t,
@@ -730,6 +759,18 @@ s_no_extra_traits! {
         pub sdl_alen: ::c_uchar,
         pub sdl_slen: ::c_uchar,
         pub sdl_data: [::c_char; 12],
+    }
+
+    #[cfg(target_env = "nto71-iosock")]
+    pub struct sockaddr_dl {
+        pub sdl_len: ::c_uchar,
+        pub sdl_family: ::c_uchar,
+        pub sdl_index: ::c_ushort,
+        pub sdl_type: ::c_uchar,
+        pub sdl_nlen: ::c_uchar,
+        pub sdl_alen: ::c_uchar,
+        pub sdl_slen: ::c_uchar,
+        pub sdl_data: [::c_char; 46],
     }
 
     pub struct sync_t {
@@ -1239,6 +1280,7 @@ pub const IFF_BROADCAST: ::c_int = 0x00000002;
 pub const IFF_DEBUG: ::c_int = 0x00000004;
 pub const IFF_LOOPBACK: ::c_int = 0x00000008;
 pub const IFF_POINTOPOINT: ::c_int = 0x00000010;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const IFF_NOTRAILERS: ::c_int = 0x00000020;
 pub const IFF_RUNNING: ::c_int = 0x00000040;
 pub const IFF_NOARP: ::c_int = 0x00000080;
@@ -1292,7 +1334,9 @@ pub const IP_HDRINCL: ::c_int = 2;
 pub const IP_OPTIONS: ::c_int = 1;
 pub const IP_RECVOPTS: ::c_int = 5;
 pub const IP_RETOPTS: ::c_int = 8;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const IP_PKTINFO: ::c_int = 25;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const IP_IPSEC_POLICY_COMPAT: ::c_int = 22;
 pub const IP_MULTICAST_IF: ::c_int = 9;
 pub const IP_MULTICAST_TTL: ::c_int = 10;
@@ -1341,6 +1385,7 @@ pub const IPV6_JOIN_GROUP: ::c_int = 12;
 pub const IPV6_LEAVE_GROUP: ::c_int = 13;
 pub const IPV6_CHECKSUM: ::c_int = 26;
 pub const IPV6_V6ONLY: ::c_int = 27;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const IPV6_IPSEC_POLICY_COMPAT: ::c_int = 28;
 pub const IPV6_RTHDRDSTOPTS: ::c_int = 35;
 pub const IPV6_RECVPKTINFO: ::c_int = 36;
@@ -1362,6 +1407,7 @@ pub const IPV6_DONTFRAG: ::c_int = 62;
 pub const TCP_NODELAY: ::c_int = 0x01;
 pub const TCP_MAXSEG: ::c_int = 0x02;
 pub const TCP_MD5SIG: ::c_int = 0x10;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const TCP_KEEPALIVE: ::c_int = 0x04;
 
 pub const SHUT_RD: ::c_int = 0;
@@ -1512,6 +1558,7 @@ pub const MAXTTL: u8 = 255;
 
 pub const ARPHRD_ETHER: u16 = 1;
 pub const ARPHRD_IEEE802: u16 = 6;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const ARPHRD_ARCNET: u16 = 7;
 pub const ARPHRD_IEEE1394: u16 = 24;
 
@@ -1533,6 +1580,7 @@ pub const SO_RCVLOWAT: ::c_int = 0x1004;
 pub const SO_SNDLOWAT: ::c_int = 0x1003;
 pub const SO_RCVTIMEO: ::c_int = 0x1006;
 pub const SO_SNDTIMEO: ::c_int = 0x1005;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const SO_BINDTODEVICE: ::c_int = 0x0800;
 pub const SO_TIMESTAMP: ::c_int = 0x0400;
 pub const SO_ACCEPTCONN: ::c_int = 0x0002;
@@ -1579,6 +1627,7 @@ pub const EAI_BADFLAGS: ::c_int = 3;
 pub const EAI_NONAME: ::c_int = 8;
 pub const EAI_AGAIN: ::c_int = 2;
 pub const EAI_FAIL: ::c_int = 4;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const EAI_NODATA: ::c_int = 7;
 pub const EAI_FAMILY: ::c_int = 5;
 pub const EAI_SOCKTYPE: ::c_int = 10;
@@ -1613,6 +1662,7 @@ pub const POSIX_SPAWN_SETSIGMASK: ::c_short = 0x0002;
 pub const POSIX_SPAWN_SETSCHEDPARAM: ::c_short = 0x0400;
 pub const POSIX_SPAWN_SETSCHEDULER: ::c_short = 0x0040;
 
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const IPTOS_ECN_NOT_ECT: u8 = 0x00;
 
 pub const RTF_UP: ::c_ushort = 0x0001;
@@ -2265,15 +2315,23 @@ pub const HW_PHYSMEM: ::c_int = 5;
 pub const HW_USERMEM: ::c_int = 6;
 pub const HW_PAGESIZE: ::c_int = 7;
 pub const HW_DISKNAMES: ::c_int = 8;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const HW_IOSTATS: ::c_int = 9;
 pub const HW_MACHINE_ARCH: ::c_int = 10;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const HW_ALIGNBYTES: ::c_int = 11;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const HW_CNMAGIC: ::c_int = 12;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const HW_PHYSMEM64: ::c_int = 13;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const HW_USERMEM64: ::c_int = 14;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const HW_IOSTATNAMES: ::c_int = 15;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const HW_MAXID: ::c_int = 15;
 
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const CTL_UNSPEC: ::c_int = 0;
 pub const CTL_KERN: ::c_int = 1;
 pub const CTL_VM: ::c_int = 2;
@@ -2283,11 +2341,17 @@ pub const CTL_DEBUG: ::c_int = 5;
 pub const CTL_HW: ::c_int = 6;
 pub const CTL_MACHDEP: ::c_int = 7;
 pub const CTL_USER: ::c_int = 8;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const CTL_QNX: ::c_int = 9;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const CTL_PROC: ::c_int = 10;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const CTL_VENDOR: ::c_int = 11;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const CTL_EMUL: ::c_int = 12;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const CTL_SECURITY: ::c_int = 13;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const CTL_MAXID: ::c_int = 14;
 
 pub const DAY_1: ::nl_item = 8;
@@ -2349,6 +2413,7 @@ pub const AF_ISO: ::c_int = 7;
 pub const AF_LAT: ::c_int = 14;
 pub const AF_LINK: ::c_int = 18;
 pub const AF_NATM: ::c_int = 27;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const AF_NS: ::c_int = 6;
 pub const AF_OSI: ::c_int = 7;
 pub const AF_PUP: ::c_int = 4;
@@ -2409,17 +2474,22 @@ pub const FIOCLEX: ::c_int = 26113;
 pub const FIOGETOWN: ::c_int = 1074030203;
 pub const FIONCLEX: ::c_int = 26114;
 pub const FIONREAD: ::c_int = 1074030207;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const FIONSPACE: ::c_int = 1074030200;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const FIONWRITE: ::c_int = 1074030201;
 pub const FIOSETOWN: ::c_int = -2147195268;
 
 pub const F_SETOWN: ::c_int = 36;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const IFF_ACCEPTRTADV: ::c_int = 0x40000000;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const IFF_IP6FORWARDING: ::c_int = 0x20000000;
 pub const IFF_LINK0: ::c_int = 0x00001000;
 pub const IFF_LINK1: ::c_int = 0x00002000;
 pub const IFF_LINK2: ::c_int = 0x00004000;
 pub const IFF_OACTIVE: ::c_int = 0x00000400;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const IFF_SHIM: ::c_int = 0x80000000;
 pub const IFF_SIMPLEX: ::c_int = 0x00000800;
 pub const IHFLOW: tcflag_t = 0x00000001;
@@ -2441,6 +2511,7 @@ pub const KERN_IOV_MAX: ::c_int = 38;
 pub const KERN_JOB_CONTROL: ::c_int = 19;
 pub const KERN_LOGSIGEXIT: ::c_int = 46;
 pub const KERN_MAXFILES: ::c_int = 7;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const KERN_MAXID: ::c_int = 83;
 pub const KERN_MAXPROC: ::c_int = 6;
 pub const KERN_MAXVNODES: ::c_int = 5;
@@ -2477,6 +2548,7 @@ pub const LC_TIME: ::c_int = 16;
 
 pub const LOCAL_CONNWAIT: ::c_int = 0x0002;
 pub const LOCAL_CREDS: ::c_int = 0x0001;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const LOCAL_PEEREID: ::c_int = 0x0003;
 
 pub const MAP_STACK: ::c_int = 0x00001000;
@@ -2571,11 +2643,15 @@ pub const SIGEV_NONE: ::c_int = 0;
 pub const SIGEV_SIGNAL: ::c_int = 129;
 pub const SIGEV_THREAD: ::c_int = 135;
 pub const SIOCGIFADDR: ::c_int = -1064277727;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const SO_FIB: ::c_int = 0x100a;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const SO_OVERFLOWED: ::c_int = 0x1009;
 pub const SO_SETFIB: ::c_int = 0x100a;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const SO_TXPRIO: ::c_int = 0x100b;
 pub const SO_USELOOPBACK: ::c_int = 0x0040;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const SO_VLANPRIO: ::c_int = 0x100c;
 pub const _SS_ALIGNSIZE: usize = ::mem::size_of::<i64>();
 pub const _SS_MAXSIZE: usize = 128;
@@ -2646,7 +2722,9 @@ pub const USER_POSIX2_SW_DEV: ::c_int = 17;
 pub const USER_POSIX2_UPE: ::c_int = 18;
 pub const USER_STREAM_MAX: ::c_int = 19;
 pub const USER_TZNAME_MAX: ::c_int = 20;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const USER_ATEXIT_MAX: ::c_int = 21;
+#[cfg(not(target_env = "nto71-iosock"))]
 pub const USER_MAXID: ::c_int = 22;
 
 pub const VDOWN: usize = 31;
@@ -2686,7 +2764,10 @@ pub const PTHREAD_PROCESS_SHARED: ::c_int = 0x01;
 pub const PTHREAD_KEYS_MAX: usize = 128;
 
 pub const PTHREAD_MUTEX_INITIALIZER: pthread_mutex_t = pthread_mutex_t {
+    // #[cfg(PTHREAD_MUTEX_INITIALIZER_uses_NTO_SYNC_NODESTROY)]
     __u: 0x82000000,
+    // #[cfg(not(PTHREAD_MUTEX_INITIALIZER_uses_NTO_SYNC_NODESTROY))]
+    // __u: 0x80000000,
     __owner: 0x0,
 };
 pub const PTHREAD_COND_INITIALIZER: pthread_cond_t = pthread_cond_t {
@@ -3278,12 +3359,21 @@ extern "C" {
         flags: ::c_int,
     ) -> ::c_int;
 
+    #[cfg(not(target_env = "nto71-iosock"))]
     pub fn sendmmsg(
         sockfd: ::c_int,
         msgvec: *mut ::mmsghdr,
         vlen: ::c_uint,
         flags: ::c_uint,
     ) -> ::c_int;
+    #[cfg(target_env = "nto71-iosock")]
+    pub fn sendmmsg(
+        sockfd: ::c_int,
+        msgvec: *mut ::mmsghdr,
+        vlen: ::size_t,
+        flags: ::c_int,
+    ) -> ::ssize_t;
+    #[cfg(not(target_env = "nto71-iosock"))]
     pub fn recvmmsg(
         sockfd: ::c_int,
         msgvec: *mut ::mmsghdr,
@@ -3291,7 +3381,14 @@ extern "C" {
         flags: ::c_uint,
         timeout: *mut ::timespec,
     ) -> ::c_int;
-
+    #[cfg(target_env = "nto71-iosock")]
+    pub fn recvmmsg(
+        sockfd: ::c_int,
+        msgvec: *mut ::mmsghdr,
+        vlen: ::size_t,
+        flags: ::c_int,
+        timeout: *const ::timespec,
+    ) -> ::ssize_t;
     pub fn mallopt(param: ::c_int, value: i64) -> ::c_int;
     pub fn gettimeofday(tp: *mut ::timeval, tz: *mut ::c_void) -> ::c_int;
 
