@@ -3055,6 +3055,17 @@ fn test_neutrino(target: &str) {
     assert!(target.contains("nto-qnx"));
 
     let mut cfg = ctest_cfg();
+    if target.ends_with("_iosock") {
+        cfg.include(concat!(env!("QNX_TARGET"), "/usr/include/io-sock"));
+        headers! { cfg:
+            "io-sock.h",
+            "sys/types.h",
+            "sys/socket.h",
+            "sys/sysctl.h",
+            "net/if.h",
+            "net/if_arp.h"
+        }
+    }
 
     headers! { cfg:
         "ctype.h",
@@ -3215,6 +3226,9 @@ fn test_neutrino(target: &str) {
             // `c_char_def` is always public but not always reexported.
             "c_char_def" => true,
 
+            // FIXME: "'__uint128' undeclared" in C
+            "__uint128" => true,
+
             _ => false,
         }
     });
@@ -3274,6 +3288,9 @@ fn test_neutrino(target: &str) {
             // Not defined in any headers.  Defined to work around a
             // stack unwinding bug.
             "__my_thread_exit" => true,
+
+            // Wrong const-ness
+            "dl_iterate_phdr" => true,
 
             _ => false,
         }
