@@ -1331,7 +1331,7 @@ cfg_if! {
         pub const KERN_MAXID: c_int = 83;
         pub const KERN_PROC_ARGS: c_int = 48;
         pub const KERN_PROC_ENV: c_int = 3;
-        pub const KERN_PROC_GID: c_int = 11;
+        pub const KERN_PROC_GID: c_int = 7;
         pub const KERN_PROC_RGID: c_int = 8;
         pub const LOCAL_CONNWAIT: c_int = 0x0002;
         pub const LOCAL_CREDS: c_int = 0x0001;
@@ -1376,7 +1376,7 @@ cfg_if! {
         pub const KERN_LOGSIGEXIT: c_int = 34;
         pub const KERN_PROC_ARGS: c_int = 7;
         pub const KERN_PROC_ENV: c_int = 35;
-        pub const KERN_PROC_GID: c_int = 7;
+        pub const KERN_PROC_GID: c_int = 11;
         pub const KERN_PROC_RGID: c_int = 10;
         pub const LOCAL_CONNWAIT: c_int = 4;
         pub const LOCAL_CREDS: c_int = 2;
